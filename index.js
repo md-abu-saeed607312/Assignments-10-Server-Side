@@ -53,6 +53,25 @@ async function run() {
     const product = await  database.findOne({ _id: new ObjectId(id) });
     res.send(product)
   });
+
+
+  // ----------------My Equipment List----------------
+
+const my_Equipment_List = client.db("Sports-Equipment-Store").collection("my_Equipment_List");
+
+app.post("/myequipment", async (req, res) => {
+    const data = req.body;
+    const result = await my_Equipment_List.insertOne(data); 
+    res.send(result);
+});
+
+app.get("/myequipment", async (req, res) => {
+    const result = await my_Equipment_List.find().toArray();
+    res.send(result);
+});
+
+
+
 }
 run().catch(console.dir);
 
