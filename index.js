@@ -2,24 +2,22 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const port = process.env.PORT || 5000;
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
-const { MongoClient, ServerApiVersion,ObjectId } = require("mongodb"); //copy to website
-
-// MiddleWare
+// Middleware
 app.use(cors());
-app.use(express.json()); //Body তে Json Data পাঠাতে
+app.use(express.json());
 
+// Root Route
 app.get("/", (req, res) => {
   res.send("Sports Equipment Store Running");
 });
 
-// bHxUKg9oYXFQDf8D
-// admin
-
+// MongoDB URI
 const uri =
   "mongodb+srv://admin:bHxUKg9oYXFQDf8D@cluster0.dblis.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// MongoDB Client Setup
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -28,54 +26,72 @@ const client = new MongoClient(uri, {
   },
 });
 
+// Main Function to Run the Server
 async function run() {
-  // Connect the client to the server	(optional starting in v4.7)
-  await client.connect();
-  console.log("MongoDB Connected Successfully!");
+  try {
+    await client.connect();
+    console.log("✅ MongoDB Connected Successfully!");
 
-  const database = client.db("Sports-Equipment-Store").collection("Sport-Data");
+    // Database Collections
+    const database = client.db("Sports-Equipment-Store").collection("Sport-Data");
+    const my_Equipment = client.db("Sports-Equipment-Store").collection("my_Equipment_List");
 
-  // POST API Data Add
-  app.post("/datastor", async (req, res) => {
-    const data = req.body;
-    const result = await database.insertOne(data);
-    res.send(result);
-  });
+    // ---------- Sports Equipment APIs ----------
 
-  // Data Read
-  app.get("/all-data", async (req, res) => {
-    const result = await database.find().toArray();
-    res.send(result);
-  });
+    // POST API: নতুন স্পোর্টস ডাটা যোগ করা
+    app.post("/datastor", async (req, res) => {
+        const data = req.body;
+        const result = await database.insertOne(data);
+        res.send(result);
+    });
 
-  app.get("/product/:id", async (req, res) => {
-    const id = req.params.id;
-    const product = await  database.findOne({ _id: new ObjectId(id) });
-    res.send(product)
-  });
+    // GET API: সব স্পোর্টস ডাটা পড়া
+    app.get("/all-data", async (req, res) => {
+        const result = await database.find().toArray();
+        res.send(result);
+    });
+
+    // GET API: নির্দিষ্ট প্রোডাক্টের তথ্য
+    app.get("/product/:id", async (req, res) => {
+        const id = req.params.id;
+        const product = await database.findOne({ _id: new ObjectId(id) });
+        res.send(product);
+     
+    });
+
+    // ---------- My Equipment List APIs ----------
+
+    // POST API: নতুন ইকুইপমেন্ট যোগ করা
+    app.post("/myequipment", async (req, res) => {
+      const data = req.body;
+      const result = await my_Equipment.insertOne(data);
+      res.send(result);
+    });
+
+    // GET API: My Equipment List থেকে সব ডাটা পড়া
+    app.get("/myequipment", async (req, res) => {
+      const result = await my_Equipment.find().toArray();
+      res.send(result);
+    });
+
+    // DELETE API: নির্দিষ্ট একটি ইকুইপমেন্ট ডিলিট করা
+    app.delete("/myequipment/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: id };
+      const result = await my_Equipment.deleteOne(query);
+      res.send(result);
+    });
 
 
-  // ----------------My Equipment List----------------
-
-const my_Equipment_List = client.db("Sports-Equipment-Store").collection("my_Equipment_List");
-
-app.post("/myequipment", async (req, res) => {
-    const data = req.body;
-    const result = await my_Equipment_List.insertOne(data); 
-    res.send(result);
-});
-
-app.get("/myequipment", async (req, res) => {
-    const result = await my_Equipment_List.find().toArray();
-    res.send(result);
-});
-
-
-
+    
+  } catch (error) {
+    console.error("❌ MongoDB Connection Error:", error);
+  }
 }
+
 run().catch(console.dir);
 
+// সার্ভার চালু করা
 app.listen(port, () => {
-  console.log(`Server is Running:${port}`);
+  console.log(`🚀 Server is Running on port ${port}`);
 });
-
