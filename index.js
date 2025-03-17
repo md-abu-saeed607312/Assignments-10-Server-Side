@@ -33,30 +33,33 @@ async function run() {
     console.log("✅ MongoDB Connected Successfully!");
 
     // Database Collections
-    const database = client.db("Sports-Equipment-Store").collection("Sport-Data");
-    const my_Equipment = client.db("Sports-Equipment-Store").collection("my_Equipment_List");
+    const database = client
+      .db("Sports-Equipment-Store")
+      .collection("Sport-Data");
+    const my_Equipment = client
+      .db("Sports-Equipment-Store")
+      .collection("my_Equipment_List");
 
     // ---------- Sports Equipment APIs ----------
 
     // POST API: নতুন স্পোর্টস ডাটা যোগ করা
     app.post("/datastor", async (req, res) => {
-        const data = req.body;
-        const result = await database.insertOne(data);
-        res.send(result);
+      const data = req.body;
+      const result = await database.insertOne(data);
+      res.send(result);
     });
 
     // GET API: সব স্পোর্টস ডাটা পড়া
     app.get("/all-data", async (req, res) => {
-        const result = await database.find().toArray();
-        res.send(result);
+      const result = await database.find().toArray();
+      res.send(result);
     });
 
     // GET API: নির্দিষ্ট প্রোডাক্টের তথ্য
     app.get("/product/:id", async (req, res) => {
-        const id = req.params.id;
-        const product = await database.findOne({ _id: new ObjectId(id) });
-        res.send(product);
-     
+      const id = req.params.id;
+      const product = await database.findOne({ _id: new ObjectId(id) });
+      res.send(product);
     });
 
     // ---------- My Equipment List APIs ----------
@@ -70,7 +73,7 @@ async function run() {
 
     // GET API: My Equipment List থেকে সব ডাটা পড়া
     app.get("/myequipment", async (req, res) => {
-      const result = await my_Equipment.find().toArray();
+      const result = await database.find().toArray();
       res.send(result);
     });
 
@@ -81,6 +84,22 @@ async function run() {
       const result = await my_Equipment.deleteOne(query);
       res.send(result);
     });
+
+
+    // Product Update 
+    app.put("/UpdateProduct/:id", async (req, res) => {
+      const id = req.params.id; // URL থেকে প্রোডাক্টের ID পাওয়া
+      const updatedData = req.body; // Client থেকে আসা নতুন ডাটা
+      console.log(updatedData);
+      const filter = { _id:new ObjectId(id) }; // ID অনুযায়ী ফিল্টার তৈরি করা
+      const updateDoc = {
+        $set: updatedData, // নতুন ডাটা সেট করা
+      };
+
+      const result = await database.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
 
 
     
