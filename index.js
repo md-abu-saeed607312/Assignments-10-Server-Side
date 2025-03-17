@@ -72,21 +72,30 @@ async function run() {
     });
 
     // GET API: My Equipment List থেকে সব ডাটা পড়া
+  
     app.get("/myequipment", async (req, res) => {
-      const result = await database.find().toArray();
+      const result = await my_Equipment.find().toArray();
       res.send(result);
     });
 
     // DELETE API: নির্দিষ্ট একটি ইকুইপমেন্ট ডিলিট করা
     app.delete("/myequipment/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: id };
+      const query = { _id: (id)};
       const result = await my_Equipment.deleteOne(query);
       res.send(result);
     });
 
 
     // Product Update 
+
+    app.get("/UpdateProduct", async (req, res) => {
+      const result = await database.find().toArray();
+      res.send(result);
+    });
+
+
+
     app.put("/UpdateProduct/:id", async (req, res) => {
       const id = req.params.id; // URL থেকে প্রোডাক্টের ID পাওয়া
       const updatedData = req.body; // Client থেকে আসা নতুন ডাটা
